@@ -1,0 +1,97 @@
+body {
+    background-color: #fbfbfb;
+    margin: 0px;
+}
+
+header {
+    background-color: #ffffff;
+    margin: 0px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.13);
+}
+
+a:link    {
+  /* Applies to all unvisited links */
+  text-decoration:  none;
+  }
+
+.contentBox {
+    padding-top: 20px;
+    margin: auto;
+    width: 65%;
+    max-width: 1500px;
+    min-width: 400px;
+}
+
+
+
+
+.nav ul {
+  list-style: none;
+  text-align: center;
+  padding: 0px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  margin: 0px;
+  /* border-bottom: 1px solid #bfbfbf; */
+}
+.nav li {
+  font-family: Roboto, sans-serif;
+  font-size: 1.2em;
+  line-height: 25px;
+  height: 25px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: #5e5e5e;
+  display: block;
+  transition: .3s color;
+}
+
+.nav a:hover {
+  color: #9a9a9a;
+}
+
+/* .nav a.active { */
+  /* cursor: default; */
+/* } */
+
+@media screen and (min-width: 600px) {
+  .nav li {
+    width: 250px;
+    border-bottom: none;
+    height: 25px;
+    line-height: 25px;
+    font-size: 1.2em;
+  }
+
+  /* Option 1 - Display Inline */
+  .nav li {
+    display: inline-block;
+    margin-right: -5px;
+  }
+
+
+
+.notes {
+    text-align: left;
+    font-family: Roboto, sans-serif;
+    font-size: 1.2em;
+    padding: 0px;
+}
+
+.code {
+    text-align: left;
+    font-size: 1.1em;
+    padding: 0px;
+}
+
+.notes li {
+    margin: 10px 10px;
+    margin-right: 65px;
+}
+
+.code li {
+    margin: 10px 10px;
+    margin-right: 65px;
+}

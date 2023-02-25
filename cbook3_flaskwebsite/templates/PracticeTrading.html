@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>Practice Trading</title>
+    <meta charset="UTF-8">
+
+    <!-- The .. before / tell it to go up 1 level in the directory -->
+    <link rel="stylesheet" href="../static/practiceTrading.css">
+    <link rel="icon" href="../static/updown.png">
+    <meta name="description" content="A stock trading practice tool">
+    <!-- <meta name="keywords" content="HTML,CSS,XML,JavaScript"> -->
+    <!-- <meta name="author" content="Carl"> -->
+
+    <!-- For viewing on different devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="../static/jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+
+
+    <div id="controls">
+        <!-- Buttons are "inline" elements -->
+
+        <div id="currentPos" class="statusBox">
+            <span style="font-family:Arial; display:block; text-align:center; background-color:lightgray; font-weight:bold;">Current Position</span>
+
+            <span id="curPosPct" style="font-family:Arial; display:block; text-align:center; background-color:#dedede; font-weight:bold; font-size:34px">0%</span>
+        </div>
+
+        <button id="Buy" class="buttonSL">Buy</button>
+        <button id="Short" class="buttonSL">Short</button>
+        <button id="advanceOneBar" class="button">Advance 1</button>
+        <button id="advanceFiveBars" class="button">Advance 5</button>
+
+        <div id="thisChart" class="statusBox">
+            <span style="font-family:Arial; display:block; text-align:center; background-color:lightgray; font-weight:bold;">This Chart</span>
+
+            <span id="thisChartPct" style="font-family:Arial; display:block; text-align:center; background-color:#dedede; font-weight:bold; font-size:30px">0%</span>
+        </div>
+
+        <button id="nextChart" class="button">Next Chart</button>
+
+
+        <div id="symSearch">
+            Find: <input id="findSym" maxlength=10 size=14 type="text">
+        </div>
+
+        <div id="overallPct" class="statusBox">
+            <span style="font-family:Arial; display:block; text-align:center; background-color:lightgray; font-weight:bold;">Overall</span>
+
+            <span id="txtOverallPct" style="font-family:Arial; display:block; text-align:center; background-color:#dedede; font-weight:bold; font-size:30px">0%</span>
+        </div>
+        
+        <div id="symbolInfo">
+            <span id="symbolInfoSym" style="font-family:Arial; display:block; text-align:center; font-weight:bold; font-size:40px"></span>
+            <span id="symbolInfoDate" style="font-family:Arial; display:block; text-align:center; font-weight:bold; font-size:30px"></span>
+        </div>
+
+
+
+    </div>
+
+
+
+    <div id="chartContainer">
+    
+   
+
+        <div id="priceHist">
+            
+            
+            <svg id="rectsBehind" style="position: absolute;" height=100% width=100%>
+            
+            </svg>
+            
+            <svg id="priceGLineLabels" style="position: absolute;" height=100% width=100%>
+            
+            </svg>
+            
+            
+            <svg id="priceHistSVG" style="position: absolute;" height=100% width=100%>
+            
+                <g fill="none" font-family="Arial" font-size="8pt" stroke="#d8d8d8" stroke-width="0.7" stroke-dasharray="2,2">
+                <path id=minorGrid d="">
+                </path>
+                </g>
+                                    
+                <line id="priceVolDivider" x1="100%" y1="100%" x2="0%" y2="100%" style="stroke: #dedede; stroke-width: 4;"></line>
+
+                <g fill="none" font-family="Arial" font-size="8pt" stroke=#141489 stroke-width="2">
+                <path id=prPathUp d="">
+                </path>
+                </g>
+
+                <g fill="none" font-family="Arial" font-size="8pt" stroke=#d31010 stroke-width="2">
+                <path id=prPathDn d="">
+                </path>
+                </g>
+
+                <g fill="none" font-family="Arial" font-size="8pt" stroke=#000000 stroke-width="1.3">
+                <path id=mktPath d="">
+                </path>
+                </g>
+
+                <g fill="none" font-family="Arial" font-size="8pt" stroke=#f09e07 stroke-width="0.8">
+                <path id=prSMAfifty d="">
+                </path>
+                </g>
+
+                <g fill="none" font-family="Arial" font-size="8pt" stroke=#212121 stroke-width="0.7">
+                <path id=prSMAtwoHundred d="">
+                </path>
+                </g>
+
+            </svg>
+            
+            <svg id="rectsInFront" style="position: absolute;" height=100% width=100%>
+            
+            </svg>
+            
+            <svg style="position: absolute;" height=100% width=100%>
+                <g fill=#000000 font-family="Arial" font-size="11pt" stroke="none" stroke-width="0.4">
+                   <text id="barPctTxt" text-anchor="end" x=0px y=13px></text>
+                </g> 
+            </svg>
+            
+
+
+        </div>
+
+        <div id="volHist">
+            <!--overflow: visible; allows volume bars to extend outside this div-->
+            <svg style="position: absolute; overflow: visible;" height=100% width=100%>
+            
+                <g fill="none" font-family="Arial" font-size="8pt" stroke="#d8d8d8" stroke-width="0.5" stroke-dasharray="2,2">
+                <path id=minorGridVol d="">
+                </path>
+                </g>
+            
+                <g fill="none" font-family="Arial" font-size="8pt" stroke=#141489 stroke-width="2">
+                <path id=volPathUp d="">
+                </path>
+                </g>
+
+                <g fill="none" font-family="Arial" font-size="8pt" stroke=#d31010 stroke-width="2">
+                <path id=volPathDn d="">
+                </path>
+                </g>
+
+                <g fill="none" font-family="Arial" font-size="8pt" stroke=#f09e07 stroke-width="0.9">
+                <path id=volSMAfifty d="">
+                </path>
+                </g>
+
+                
+            </svg>
+            
+        </div>
+
+    </div>
+
+
+    <script language="javascript" src="../static/practiceTrading.js"></script>
+
+
+    
+
+    
+
+
+</body>
+</html>

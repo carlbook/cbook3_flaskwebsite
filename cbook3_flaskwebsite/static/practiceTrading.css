@@ -1,0 +1,146 @@
+body {
+    background-color: #dedede;
+}
+
+#controls {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 200px;
+  height: 100%;
+  background-color: #dedede;
+  font-family: Arial;
+}
+
+
+/* style for all elements with "button" class */
+.button {
+    font-weight:bold;
+    display: block; /*necessary to support the margin instruction*/
+    margin: auto; /*centers the button*/
+    position: relative; /*necessary to support the margin instruction*/
+    width: 88%;
+    padding: 10px 20px;
+    background-color: #575757;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-family: Arial;
+}
+
+/* short and long buttons have different style */
+.buttonSL {
+    font-weight:bold;
+    background-color: #575757;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    position: absolute;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    top: 150px;
+    width: 80px;
+    height: 55px;
+    font-family: Arial;
+}
+
+#currentPos {
+    top: 10px;
+}
+
+/* unique style for individual buttons (distinguished by id) */
+#Buy {
+    left: 12px;
+    top: 85px;
+}
+#Short {
+    right: 12px;
+    top: 85px;
+}
+
+#updateHist {
+    top: 10px;
+}
+
+#advanceOneBar {
+    top: 90px;
+}
+
+#advanceFiveBars {
+    top: 95px;
+}
+
+#thisChart {
+    top: 115px;
+}
+
+#nextChart {
+    top: 125px;
+}
+
+#symbolInfo {
+    top: 210px;
+    font-size:16px;
+    display: block;
+    margin: auto;
+    position: relative;
+    border-style: none;
+    width: 88%;
+}
+
+
+.statusBox {
+    font-size:16px;
+    display: block;
+    margin: auto;
+    position: relative;
+    border-style: solid;
+    border-width: 1px;
+    border-color: gray;
+    width: 88%;
+}
+
+#symSearch {
+    font-size:16px;
+    display: block;
+    margin: auto;
+    position: relative;
+    width: 88%;
+    top: 150px;
+}
+
+
+#overallPct {
+    top: 170px;
+}
+
+
+#chartContainer {
+  position: absolute;
+  top: 10px;
+  right: 200px;
+  left: 0px;
+  bottom: 10px;
+  background-color: white;
+}
+
+#priceHist {
+    position: absolute;
+    top: 0%;
+    bottom: 20%;
+    left: 0%;
+    right: 0%;
+}
+
+#volHist {
+    position: absolute;
+    top: 80%;
+    bottom: 0%;
+    left: 0%;
+    right: 0%;
+}

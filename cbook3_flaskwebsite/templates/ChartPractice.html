@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>Carl Book</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../static/style.css">
+    <link rel="icon" href="../static/cbook.png">
+    <!--Attribution: part of the favicon comes from https://www.flickr.com/photos/frisno/-->
+    <meta name="description" content="Hi, this is Carl.">
+    <!-- <meta name="keywords" content="HTML,CSS,XML,JavaScript"> -->
+    <!-- <meta name="author" content="Carl"> -->
+
+    <!-- For viewing on different devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body>
+
+    <header>
+        <div class="nav">
+            <ul>
+                <li><a href="http://www.cbook3.com/">Home</a></li>
+                <li><a href="http://www.cbook3.com/HandwrittenDigits8x8/">Digits Recognition</a></li>
+                <li><a href="http://www.cbook3.com/ChartPractice/">Stock Chart Practice</a></li>
+                <!-- <li><a href="#">More Stuff Here</a></li> -->
+                <!-- <li><a href="#" title='just kidding'>Riemann Hypothesis Proof</a></li> -->
+            </ul>
+        </div>
+    </header>
+
+
+    <div class="contentBox">
+
+
+        <div class="notes">
+            <p>I made this <a href="http://www.cbook3.com/PracticeTrading/" target="_blank">Stock Chart Practice</a> app to learn some Javascript while experimenting with the chart reading techniques advocated by Jesse Livermore and William O'Neil. It has been tested in Chrome and Firefox. Historical price data is available at <a href=https://quantquote.com/historical-stock-data target="_blank">QuantQuote</a>. If you are looking for more up-to-date data you could make a Yahoo Finance downloader using a library like <i>requests</i> in Python. Unfortunately, Yahoo's data integrity and completeness are limited.
+            </p>
+            <p>The charts show daily HLC bars with 50-day and 200-day simple moving averages, volume with a 50-day SMA, and a line representing the value of the SP500 index at the close of each trading day. Clicking "Next Chart" will load a randomly selected ticker symbol at a random date. Below are a few chart-reading ideas from Livermore and O'Neil for reference.</p>
+            <ul style="list-style-type:disc">
+              <li>Strong market sentiment is crucial. Breakouts are likely to fail in a narrow/choppy/sideways market.</li>
+              <li>Expect to be wrong approximately half the time. This is manageable as long as your average gain is sufficiently larger than your average loss. Keep losses small.</li>
+              <li>If you don't see quick confirmation of a suspected movement then close the position.</li>
+              <li>Seek charts with tight price action, decisive movements, and a clearly defined long-term trend.</li>
+              <li>Don't chase a movement. If you miss the entry, wait for a new opportunity.</li>
+              <li>Don't trade against the long-term trend.</li>
+              <li>Observe and understand the extent to which the expectation of a price movement may indicate a higher probability of that movement becoming actualized.</li>
+              <li>The stock market is noisy. Don't try too hard to find an explanation for everything you see on the chart.</li>
+            </ul>
+
+        </div>
+
+
+    </div>
+
+
+
+
+</body>
+</html>

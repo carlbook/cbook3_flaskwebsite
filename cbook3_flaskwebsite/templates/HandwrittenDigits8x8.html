@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>Carl Book</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../static/style.css">
+    <link rel="icon" href="../static/cbook.png">
+    <!--Attribution: part of the favicon comes from https://www.flickr.com/photos/frisno/-->
+    <meta name="description" content="Hi, this is Carl.">
+    <!-- <meta name="keywords" content="HTML,CSS,XML,JavaScript"> -->
+    <!-- <meta name="author" content="Carl"> -->
+
+    <!-- For viewing on different devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body>
+
+    <header>
+        <div class="nav">
+            <ul>
+                <li><a href="http://www.cbook3.com/">Home</a></li>
+                <li><a href="http://www.cbook3.com/HandwrittenDigits8x8/">Digits Recognition</a></li>
+                <li><a href="http://www.cbook3.com/ChartPractice/">Stock Chart Practice</a></li>
+                <!-- <li><a href="#">More Stuff Here</a></li> -->
+                <!-- <li><a href="#" title='just kidding'>Riemann Hypothesis Proof</a></li> -->
+            </ul>
+        </div>
+    </header>
+
+
+    <div class="contentBox">
+
+        <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+        <div class="notes">
+            <p>Handwritten digits recognition is a popular task with which to introduce machine learning concepts. Here we'll explore the digits dataset available in the popular <a href="http://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_digits.html" target="_blank">scikit-learn</a> Python library. MNIST is a better dataset for digits recognition, but there is already an enormous amount of MNIST discussion available online. The scikit-learn dataset offers sufficient richness to explore a few important ideas and is lightweight enough to be manipulated quickly on a personal computer. I am curious to get a benchmark with k-Nearest Neighbors and Gaussian clustering, then try to beat that benchmark with a convolutional network.</p>
+            <p>The dataset consists of 1797 samples of 8x8 grids of pixel intensity ranging from 0 to 16 in increments of 1. There are 10 classes and the dataset is well balanced. Let's observe the first ten samples in the dataset.</p>
+<div class="code">
+<pre class="prettyprint">
+from sklearn import datasets
+import numpy as np
+import matplotlib.pyplot as plt
+
+digits = datasets.load_digits()
+X = np.array(digits.data)
+y = np.array(digits.target)
+for i in range(10):
+    plt.subplot(2, 5, i+1)
+    plt.imshow(16 - X[i].reshape((8,8)), cmap='gist_gray')
+    plt.tick_params(axis='both', width=0, length=0, labelsize=0)
+plt.show()
+</pre>
+</div>
+            <p><center><img src="../static/first_10_digits.png" alt="First 10 samples in scikit-learn dataset"></center><p>
+            <p>The relatively low dimensionality of these digits makes them coarse and pixelated which will present a challenge for our classification algorithms. Note, for example, the loss of detail in the closed loop on the 6 and upper portion of the 5.</p>
+            <br>
+            <h2>k-Nearest Neighbors</h2>
+            <p>kNN is an instanced-based non-parametric learner. There isn't a training step with kNN, instead the dataset is queried from memory as needed. This makes kNN convenient for small datasets like this one. The inductive bias of kNN is the assumption that class-identity changes smoothly with location in attribute-space thus proximity will be correlated with class-identity. Unfortunately kNN is highly susceptible to the curse of dimensionality, not only in terms of a growing number of samples needed to achieve generalizable results but also because the usefulness of distance metrics <a href="https://homes.cs.washington.edu/~pedrod/papers/cacm12.pdf" target="_blank">breaks down</a> as the dimensionality of the attribute-space increases. This leads to a situation in which irrelevant features and noise are increasingly likely to be nearest neighbors to a query point.</p>
+            <p>The nearest neighbors algorithm is more likely to overfit the training data as k decreases toward 1 and to underfit if k is too large. The scikit-learn kNN estimator also includes several additional hyperparameters which are discussed in detail in the <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html" target="_blank">documentation</a>. A model complexity study must be conducted to inform our choice of hyperparameters. For brevity let's run the built-in exhaustive grid search with 10-fold cross validation. The grid search receives only 70% of our dataset since the remaining 30% is held out for test only. We'll also shuffle the dataset to avoid unbalanced concentrations of features or noise in either the training or test set.</p>
+
+<div class="code">
+<pre class="prettyprint">
+from sklearn.model_selection import GridSearchCV
+from sklearn.utils import shuffle
+from sklearn import neighbors
+
+X, y = shuffle(X, y)
+n_split = int((70.0 / 100.0) * len(y))
+X_cv, X_test = X[:n_split], X[n_split:]
+y_cv, y_test = y[:n_split], y[n_split:]
+params = {'n_neighbors':np.arange(1,20),
+          'weights':['uniform', 'distance'],
+          'p':[1,2,3]}
+estimator = neighbors.KNeighborsClassifier()
+classifier = GridSearchCV(estimator, params, refit=True, cv=10)
+classifier.fit(X_cv, y_cv)
+print('Best CV Score: ' + str(classifier.best_score_)) # 0.98886
+print('Best Parameters: ' + str(classifier.best_params_)) 
+    # >> {'n_neighbors': 4, 'weights': 'distance', 'p': 2}
+</pre>
+</div>
+            </p>
+            <p>The grid search recommends k = 4. This seems reasonable since k = 1 would certainly overfit the training set leading to high variance error. Next let's apply the recommended hyperparameters and evaluate the model's accuracy on the held-out test set. The final test error is 1.67%</p>
+
+<div class="code">
+<pre class="prettyprint">
+est = neighbors.KNeighborsClassifier(n_neighbors=4,
+                                     weights='distance',
+                                     p=2)
+est.fit(X_cv, y_cv)
+print("Training Error: %.2f%%" % (100 * (1 - est.score(X_cv, y_cv)))) # 0.00%
+print("Test Error: %.2f%%" % (100 * (1 - est.score(X_test, y_test)))) # 1.67%
+</pre>
+</div>
+            <br>
+            <h2>Gaussian Mixture Model, EM Clustering</h2>
+            <p>Clustering is a general term for an unsupervised learning process which attempts to group samples based on the extent to which they are co-located in feature space. A Gaussian Mixture Model (GMM) is a model which assumes the data was generated by a mixture of Gaussians with unkwnown parameters, and in this example the Expectation Maximization (EM) algorithm will be used to identify those parameters. The EM algorithm is guaranteed to not diverge, and in practice it almost always converges. Here we'll use the Akaike Information Criterion (AIC) to determine the number of Gaussians to include in our model. AIC attempts to measure the relative distance between the unknown true likelihood function of the data and the fitted likelihood function of the model.</p>
+            <p>Scikit-learn provides four choices for the covariance matrix of the Gaussians. They vary in expressiveness, each representing a different level of constraint on the shape of the Gaussian hyper-ellipses. The "full" covariance matrix is the least constraining of the group, making it both the most expressive and the most likely to overfit. It also requires a few extra seconds of runtime.</p>
+
+<div class="code">
+<pre class="prettyprint">
+from sklearn.mixture import GaussianMixture
+
+covar_types = ['spherical', 'tied', 'diag', 'full']
+legend_entries = ['Spherical', 'Tied', 'Diagonal', 'Full']
+colors = ['lightgray', 'darkgray', 'dimgray', 'black']
+for i, cvar in enumerate(covar_types):
+    n_components = np.arange(10, 200, 10)
+    models = [GaussianMixture(n, covariance_type=cvar)
+              for n in n_components]
+    aics = [model.fit(X_cv).aic(X_cv) for model in models]
+    plt.plot(n_components, aics, color=colors[i], linewidth=3)
+plt.xlabel('Number of Components')
+plt.title('AIC Score')
+plt.legend(legend_entries)
+plt.show()
+</pre>
+</div>
+            <p><center><img src="../static/GMM_AIC.png" alt="Akaike Information Criterion"></center><p>
+            <p>Based on the AIC results we'll proceed with the "full" covariance matrix and 80 components in the mixture model. With 80 Gaussian components we cannot think of each component as a unique digit; each component is a relatively unique way of writing a particular digit. To determine a correspondence between Gaussian components and digits we'll apply a voting scheme wherein each component is labeled according to the class label which appears most frequently in that particular component.</p>
+
+<div class="code">
+<pre class="prettyprint">
+from sklearn.metrics import accuracy_score
+
+n_comp = 80
+gmm = GaussianMixture(n_components=n_comp,
+                      covariance_type='full',
+                      n_init=20)
+gmm.fit(X_cv)
+clusters = np.vstack((gmm.predict(X_cv), y_cv))
+cluster_to_label = np.zeros(n_comp, dtype=np.int8)
+for i in range(n_comp):
+    labels_in_this_Gaussian = clusters[1, clusters[0, :]==i]
+    (values, counts) = np.unique(labels_in_this_Gaussian, return_counts=True)
+    most_popular = values[np.argmax(counts)]
+    cluster_to_label[i] = most_popular
+
+voted_labels_train = [cluster_to_label[c] for c in clusters[0, :]]
+voted_labels_test = [cluster_to_label[c] for c in gmm.predict(X_test)]
+print("Training Error: %.2f%%" % (100. * (1. - accuracy_score(y_cv, voted_labels_train)))) # 4.22%
+print("Test Error: %.2f%%" % (100. * (1. - accuracy_score(y_test, voted_labels_test)))) # 8.89%
+</pre>
+</div>
+            <p>The mixture model combined with our voting scheme has identified clusters in feature-space which correctly map to training-set class labels up to an error of 4.22%. Unfortunately, the use of GMM and EM as a classification tool does not generalize well to out of sample data. The test error is 8.89%. Next we'll examine confusion matrices to see which digits were most often misclassified. Note that if you run this code yourself there will probably be slight variation in the results based on randomness in the initialization of Gaussian components.</p>
+
+<div class="code">
+<pre class="prettyprint">
+import seaborn as sns; sns.set()
+from sklearn.metrics import confusion_matrix
+
+mat = confusion_matrix(y_test, est.predict(X_test))
+sns.heatmap(mat.T, square=True, annot=True, fmt='d', cbar=False, cmap='Greys',
+            xticklabels=digits.target_names,
+            yticklabels=digits.target_names)
+plt.title('4-NN Confusion Matrix, Test Set')
+plt.xlabel('True Label')
+plt.ylabel('Predicted Label')
+plt.show()
+
+## (repeat in script containing GMM code)
+</pre>
+</div>
+            <p><center><img src="../static/conf_mtrx_4NN.png" alt="4-NN Confusion Matrix"> <img src="../static/conf_mtrx_gmm.png" alt="Mixture Model Confusion Matrix"></center><p>
+
+            <p>When the digit 8 is drawn too slender the interior whitespace is less likely to be detected and it is consistently misclassified as a 1 or a 3. Let's see if a convolutional network can outperform 4-NN's 1.67% test error.</p>
+
+            <br>
+            <h2>Convolutional Neural Network</h2>
+            <p>Observe that each digit is centered in the 8x8 grid in which it is drawn. Since the digits are taller than they are wide, there are unused pixels on the left and right sides of almost all the samples. We can exploit this to extend the dataset without losing information. Specifically, we'll create two copies of the training dataset where one excludes the leftmost column and zero-pads the right side, and the other excludes the rightmost column and zero-pads the left side. This not only augments the dataset but also encourages the learning algorithm to identify structures in a location-independent way. We need to reshape the data to its natural 2D shape so it can be analyzed using 2D convolutions.</p>
+<div class="code">
+<pre class="prettyprint">
+np.random.seed(123456789) # repeatability
+digits = datasets.load_digits()
+X = np.array(digits.data)
+y = np.array(digits.target)
+X, y = shuffle(X, y)
+n_split = int((70.0 / 100.0) * len(y))
+X_train0, X_test = X[:n_split], X[n_split:]
+y_train0, y_test = y[:n_split], y[n_split:]
+# reshape to [samples][depth][width][height]
+# depth is 1 (grayscale) in this dataset
+X_train0 = X_train0.reshape(X_train0.shape[0], 1, 8, 8).astype('float64')
+X_test = X_test.reshape(X_test.shape[0], 1, 8, 8).astype('float64')
+# initialize dataset extensions
+X_train_2 = np.zeros_like(X_train0)
+X_train_3 = np.zeros_like(X_train0)
+# create more data by shifting 1 pixel at the left and right edges
+X_train_2[:,:,:,1:] = X_train0[:,:,:,:-1]
+X_train_3[:,:,:,:-1] = X_train0[:,:,:,1:]
+X_train = np.concatenate((X_train0, X_train_2, X_train_3), axis=0)
+y_train = np.concatenate((y_train0, y_train0, y_train0), axis=0)
+</pre>
+</div>
+            <p>Next we standardize the data to zero mean and unit variance. This is an important preprocessing step for neural networks and helps prevent the network from becoming unbalanced. We also need to one-hot encode the class labels since we're using the categorical_crossentropy loss function.</p>
+<div class="code">
+<pre class="prettyprint">
+from sklearn.preprocessing import StandardScaler
+from keras.utils import np_utils
+
+scaler = StandardScaler()
+# do not fit the scaler on test data
+X_train = scaler.fit_transform(X_train.reshape(X_train.shape[0], 64))
+X_test = scaler.transform(X_test.reshape(X_test.shape[0], 64))
+X_train = X_train.reshape(X_train.shape[0], 1, 8, 8)
+X_test = X_test.reshape(X_test.shape[0], 1, 8, 8)
+# one hot encode class labels
+y_train = np_utils.to_categorical(y_train)
+y_test = np_utils.to_categorical(y_test)
+</pre>
+</div>
+            <h3>Model Definition</h3>
+            <p>Three sequential convolutional layers are used to identify features with increasing abstraction. These features will be inputs to a fully connected neural network culminating in a softmax class-label assignment. Since there are so few pixels in each sample there's no reason to use pooling between the convolutional layers. The small image size also justifies strides of 1 pixel in both directions and a small (3x3) kernel. Dropout is applied to the fully connected layers to mitigate overfitting by forcing the model to find alternative internal representations for structures in the data. L2 regularization is applied to further manage network weight growth and reduce the model's tendency to overfit. Within each epoch 10% of the training data is used for cross validation, and cross validation accuracy is used to determine the "best" weights for the network which will be written to a hdf5 file.</p>
+
+<div class="code">
+<pre class="prettyprint">
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import Dropout
+from keras.layers import Flatten
+from keras.layers.convolutional import Conv2D
+from keras import regularizers
+from keras import backend as K
+K.set_image_dim_ordering('th')
+from keras.callbacks import ModelCheckpoint
+
+# Build the model
+model = Sequential()
+model.add(Conv2D(30, (3, 3),
+                 strides=(1, 1),
+                 padding='same',
+                 input_shape=(1, 8, 8)))
+model.add(Conv2D(20, (3, 3),
+                 strides=(1, 1),
+                 padding='same',
+                 input_shape=(1, 8, 8),
+                 activation='relu'))
+model.add(Conv2D(20, (3, 3),
+                 strides=(1, 1),
+                 padding='same',
+                 input_shape=(1, 8, 8),
+                 activation='relu'))
+model.add(Dropout(0.05))
+model.add(Flatten()) # convnet features input to neural net
+model.add(Dense(30,
+                activation='relu',
+                kernel_regularizer=regularizers.l2(0.005),
+                activity_regularizer=regularizers.l2(0.005)))
+model.add(Dropout(0.20))
+model.add(Dense(20,
+                activation='relu',
+                kernel_regularizer=regularizers.l2(0.005),
+                activity_regularizer=regularizers.l2(0.005)))
+model.add(Dropout(0.05))
+model.add(Dense(y_test.shape[1], activation='softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# save best-performing model parameters
+chk = ModelCheckpoint(filepath='sklearn_digits_CNN.hdf5',
+                      monitor='val_acc',
+                      verbose=0,
+                      save_best_only=True,
+                      save_weights_only=False,
+                      mode='auto',
+                      period=1)
+
+model.fit(X_train,
+          y_train,
+          validation_split=0.10,
+          epochs=50,
+          shuffle=True,
+          batch_size=4,
+          verbose=2,
+          callbacks=[chk])
+</pre>
+</div>
+
+            <h3>Model Evaluation</h3>
+            <p>The test error is 0.37% which outperforms 4-NN's 1.67% error. The success of the convolutional network is due largely to it's ability to learn features in the data without excessive overfitting.</p>
+
+<div class="code">
+<pre class="prettyprint">
+model.load_weights('sklearn_digits_CNN.hdf5')
+
+print('')
+scores = model.evaluate(X_train, y_train, verbose=0)
+print("Training Error: %.2f%%" % (100 * (1 - scores[1]))) # 0.08%
+scores = model.evaluate(X_test, y_test, verbose=0)
+print("Test Error: %.2f%%" % (100 * (1 - scores[1]))) # 0.37%
+
+predictions = model.predict(X_test)
+for i, pred in enumerate(predictions):
+    predicted_class = np.argmax(pred)
+    actual_class = np.argmax(y_test[i, :])
+    if actual_class != predicted_class:
+        print("Predicted: {}, Actual : {}".format(predicted_class, actual_class))
+        this_digit = X[n_split + i, :].reshape((8,8))
+        plt.imshow(16 - this_digit, cmap=plt.get_cmap('gray'))
+        plt.show()
+</pre>
+</div>
+            <p>Only two samples in the test set are misclassified, shown below. The model predicted 9 and 3 (left, right) but the correct labels are 5 and 9.</p>
+            <p><center><img src="../static/cnn_misclass.png" alt="Misclassified by CNN"></center><p>
+
+        </div>
+    </div>
+
+</body>
+</html>
